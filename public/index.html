@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Site Analiz — Lighthouse sorunları ve hazır düzeltme prompt'ları</title>
+  <meta name="description" content="Web sitenin URL'sini gir; Performance, Accessibility, Best Practices ve SEO sorunlarını bul, Claude veya ChatGPT için hazır düzeltme prompt'larını kopyala.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="container">
+    <header class="hero">
+      <h1>Site<span>Analiz</span></h1>
+      <p>URL'ni gir. Lighthouse sorunlarını bulsun, Claude veya ChatGPT'ye yapıştıracağın hazır düzeltme prompt'larını versin.</p>
+    </header>
+
+    <form id="audit-form" class="card form" novalidate>
+      <input id="url-input" type="text" inputmode="url" autocomplete="url" placeholder="https://ornek.com" aria-label="Web sitesi adresi" required>
+      <div class="segmented" id="device-group" role="radiogroup" aria-label="Cihaz">
+        <label><input type="radio" name="strategy" value="mobile" checked><span>Mobil</span></label>
+        <label><input type="radio" name="strategy" value="desktop"><span>Masaüstü</span></label>
+      </div>
+      <div class="segmented" role="radiogroup" aria-label="Analiz kapsamı">
+        <label><input type="radio" name="mode" value="full" checked><span>Tam analiz</span></label>
+        <label><input type="radio" name="mode" value="custom"><span>Özel mod</span></label>
+      </div>
+      <label class="analysis-picker" id="analysis-picker" hidden>
+        <span>Analiz türü</span>
+        <select id="analysis-select" name="analysis">
+          <optgroup label="Lighthouse">
+            <option value="performance">Performance</option>
+            <option value="accessibility">Accessibility</option>
+            <option value="best-practices">Best Practices</option>
+            <option value="seo">SEO</option>
+          </optgroup>
+          <optgroup label="Gerçek kullanıcı verisi">
+            <option value="crux">Gerçek Kullanıcı (CrUX)</option>
+          </optgroup>
+          <optgroup label="Güvenlik">
+            <option value="security" data-device="off">Güvenlik Başlıkları (Mozilla Observatory)</option>
+            <option value="ssl" data-device="off">SSL/TLS (Qualys SSL Labs)</option>
+          </optgroup>
+          <optgroup label="Kod ve içerik">
+            <option value="html" data-device="off">HTML Doğrulama (W3C)</option>
+            <option value="links" data-device="off">Kırık Bağlantılar</option>
+          </optgroup>
+        </select>
+      </label>
+      <button id="submit-btn" type="submit">Analiz et</button>
+    </form>
+    <p id="device-hint" class="hint">Mobil: Google sıralamada mobil sonucu baz alır. Masaüstü: geniş ekran ve hızlı bağlantı simüle edilir. Tam analiz: Lighthouse'un 4 kategorisi ve gerçek kullanıcı verisi (CrUX). Özel mod: listeden seçtiğin tek bir analiz.</p>
+    <p id="analysis-hint" class="hint" hidden></p>
+
+    <p id="status" class="status" role="status" aria-live="polite" hidden></p>
+    <section id="waiting" class="card waiting" aria-label="Bekleme oyunu" hidden></section>
+
+    <section id="results" hidden>
+      <div id="scores" class="scores"></div>
+      <aside id="warnings" class="card warnings" hidden></aside>
+      <section id="game-result" class="card game-result" hidden></section>
+      <section id="ai-box" class="card ai-box" aria-live="polite"></section>
+      <nav id="tabs" class="tabs" role="tablist" aria-label="Kategoriler"></nav>
+      <div id="panel" class="panel"></div>
+    </section>
+  </main>
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p class="footer-made">Tasarlayan ve geliştiren</p>
+      <a class="footer-author" href="https://yucelgumus.dev/" target="_blank" rel="noopener author">
+        <span class="footer-mark" aria-hidden="true">YG</span>
+        <span class="footer-text">
+          <strong>Yücel Gümüş</strong>
+          <span>Full Stack Developer &amp; Yazılım Mühendisi</span>
+        </span>
+        <span class="footer-link">yucelgumus.dev <span aria-hidden="true">→</span></span>
+      </a>
+      <p class="footer-note">SiteAnaliz · Lighthouse, Chrome UX Report, Mozilla Observatory, SSL Labs ve W3C verileriyle</p>
+    </div>
+  </footer>
+  <script src="app.js" type="module"></script>
+</body>
+</html>

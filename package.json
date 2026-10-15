@@ -1,0 +1,19 @@
+{
+  "name": "web-site-analiz",
+  "version": "2.0.0",
+  "description": "Enter a website URL, get Lighthouse findings and copy-paste fix prompts for Claude or ChatGPT",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js",
+    "test": "node --test test/"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "firebase-admin": "^14.5.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
