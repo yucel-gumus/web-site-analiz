@@ -1,0 +1,20 @@
+{
+  "hosting": {
+    "site": "site-analiz",
+    "public": "hosting",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/README.md"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "run": {
+          "serviceId": "site-analiz",
+          "region": "europe-west3"
+        }
+      }
+    ]
+  }
+}

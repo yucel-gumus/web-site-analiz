@@ -46,11 +46,28 @@ export function trustProxySetting(env = process.env) {
   return v;
 }
 
+// Firebase Hosting, Cloud Run'a yönlendirdiği istekleri 60 sn'de keser; uzun analizler için sayfa
+// site-analiz.web.app'ten açılır ama API doğrudan Cloud Run'a çağrılır. Yalnızca bu kökenlere izin verilir.
+const DEFAULT_CORS_ORIGINS = ['https://site-analiz.web.app', 'https://site-analiz.firebaseapp.com'];
+
+export function corsOrigins(env = process.env) {
+  return env.CORS_ORIGINS ? env.CORS_ORIGINS.split(',').map((o) => o.trim()).filter(Boolean) : DEFAULT_CORS_ORIGINS;
+}
+
 export function createApp({ audit = runAudit, analyze = runAnalysis, ai = analyzeWithAi, config = getConfig } = {}) {
   const app = express();
   const auditLimited = createLimiter(RATE_LIMIT);
   const aiLimited = createLimiter(AI_RATE_LIMIT);
   app.disable('x-powered-by');
+  const allowed = new Set(corsOrigins());
+  app.use('/api', (req, res, next) => {
+    const origin = req.get('origin');
+    if (origin && allowed.has(origin)) {
+      res.set('Access-Control-Allow-Origin', origin);
+      res.vary('Origin');
+    }
+    next();
+  });
   app.set('trust proxy', trustProxySetting());
 
   app.get('/api/audit', async (req, res) => {

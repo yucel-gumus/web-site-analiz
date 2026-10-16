@@ -43,6 +43,11 @@ function syncModeControls() {
 form.addEventListener('change', syncModeControls);
 syncModeControls();
 
+// Firebase Hosting (site-analiz.web.app) Cloud Run'a giden istekleri 60 sn'de keser; analizler daha uzun
+// sürebildiği için API orada doğrudan Cloud Run adresinden çağrılır. Cloud Run ve yerelde aynı köken kullanılır.
+const CLOUD_RUN_API = 'https://site-analiz-270384591051.europe-west3.run.app';
+const API_BASE = /\.(web\.app|firebaseapp\.com)$/.test(location.hostname) ? CLOUD_RUN_API : '';
+
 let report = null;
 let ai = null;
 let active = 0;
@@ -228,7 +233,7 @@ function renderAi(state, data) {
 async function loadAi(reportId) {
   renderAi('loading');
   try {
-    const res = await fetch(`/api/ai?${new URLSearchParams({ reportId })}`);
+    const res = await fetch(`${API_BASE}/api/ai?${new URLSearchParams({ reportId })}`);
     const data = await readJson(res);
     if (report?.reportId !== reportId) return; // kullanıcı yeni analiz başlattı
     if (!res.ok) throw new Error(data.error || 'AI analizi yapılamadı.');
@@ -268,7 +273,7 @@ form.addEventListener('submit', async (e) => {
   startWaiting();
   try {
     const params = { url, strategy, mode, ...(mode === 'custom' ? { analysis } : {}) };
-    const res = await fetch(`/api/audit?${new URLSearchParams(params)}`);
+    const res = await fetch(`${API_BASE}/api/audit?${new URLSearchParams(params)}`);
     const data = await readJson(res);
     if (!res.ok) throw new Error(data.error || 'Bilinmeyen hata');
     report = data;

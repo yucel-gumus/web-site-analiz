@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { parseTargetUrl } from '../server/url-guard.js';
 import { normalizeLighthouse, runAudit } from '../server/psi.js';
 import { attachPrompts, describeWarnings } from '../server/prompts.js';
-import { createApp, createLimiter, trustProxySetting } from '../server/index.js';
+import { createApp, createLimiter, trustProxySetting, corsOrigins } from '../server/index.js';
 import { selectIssues, buildAiRequest, parseAiResponse, analyzeWithAi } from '../server/ai.js';
 
 test('parseTargetUrl adds https and accepts public hosts', () => {
@@ -782,4 +782,14 @@ test('outgoing User-Agent headers are ASCII-only', async () => {
     const ua = readFileSync(new URL(f, import.meta.url), 'utf8').match(/const USER_AGENT = '([^']+)'/)[1];
     assert.match(ua, /^[\x20-\x7e]+$/, f);
   }
+});
+
+test('API allows CORS only from the Firebase Hosting origins', async () => {
+  await withServer(async () => normalizeLighthouse(lhr), async (base) => {
+    const ok = await fetch(`${base}/api/audit?url=example.com`, { headers: { origin: 'https://site-analiz.web.app' } });
+    assert.equal(ok.headers.get('access-control-allow-origin'), 'https://site-analiz.web.app');
+    const evil = await fetch(`${base}/api/audit?url=example.com`, { headers: { origin: 'https://evil.example' } });
+    assert.equal(evil.headers.get('access-control-allow-origin'), null);
+  });
+  assert.deepEqual(corsOrigins({ CORS_ORIGINS: 'https://a.dev, https://b.dev' }), ['https://a.dev', 'https://b.dev']);
 });
