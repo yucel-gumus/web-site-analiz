@@ -6,15 +6,15 @@
 
 Lighthouse · Gerçek kullanıcı verisi (CrUX) · Güvenlik başlıkları · SSL/TLS · HTML doğrulama · Kırık bağlantılar
 
-[![Canlı](https://img.shields.io/badge/canl%C4%B1-site--analiz.web.app-b2675e?style=for-the-badge)](https://site-analiz.web.app/)
-[![Geliştiren](https://img.shields.io/badge/geli%C5%9Ftiren-Y%C3%BCcel%20G%C3%BCm%C3%BC%C5%9F-644536?style=for-the-badge)](https://yucelgumus.dev/)
+[![Canlı](https://img.shields.io/badge/canl%C4%B1-site--analiz.web.app-ec7d55?style=for-the-badge)](https://site-analiz.web.app/)
+[![Geliştiren](https://img.shields.io/badge/geli%C5%9Ftiren-Y%C3%BCcel%20G%C3%BCm%C3%BC%C5%9F-3e5164?style=for-the-badge)](https://yucelgumus.dev/)
 
-![Node](https://img.shields.io/badge/Node.js-%E2%89%A520-432c21?logo=node.js&logoColor=e5d6c5)
-![Express](https://img.shields.io/badge/Express-4-432c21?logo=express&logoColor=e5d6c5)
-![Vanilla JS](https://img.shields.io/badge/aray%C3%BCz-vanilla%20JS-432c21?logo=javascript&logoColor=e5d6c5)
-![Gemini](https://img.shields.io/badge/AI-Gemini-432c21?logo=googlegemini&logoColor=e5d6c5)
-![Cloud Run](https://img.shields.io/badge/Cloud%20Run-europe--west3-432c21?logo=googlecloud&logoColor=e5d6c5)
-![Testler](https://img.shields.io/badge/testler-node%3Atest-432c21)
+![Node](https://img.shields.io/badge/Node.js-%E2%89%A520-253341?logo=node.js&logoColor=f5f9f5)
+![Express](https://img.shields.io/badge/Express-4-253341?logo=express&logoColor=f5f9f5)
+![Vanilla JS](https://img.shields.io/badge/aray%C3%BCz-vanilla%20JS-253341?logo=javascript&logoColor=f5f9f5)
+![Gemini](https://img.shields.io/badge/AI-Gemini-253341?logo=googlegemini&logoColor=f5f9f5)
+![Cloud Run](https://img.shields.io/badge/Cloud%20Run-europe--west3-253341?logo=googlecloud&logoColor=f5f9f5)
+![Testler](https://img.shields.io/badge/testler-node%3Atest-253341)
 
 [Canlı demo](https://site-analiz.web.app/) · [Özellikler](#-özellikler) · [Analiz modları](#-analiz-modları) · [Kurulum](#-kurulum) · [Mimari](#-mimari) · [Güvenlik](#-güvenlik)
 
@@ -154,7 +154,7 @@ firebase.json         Firebase Hosting → Cloud Run yönlendirmesi
 
 ## 🎨 Tasarım kısıtları
 
-Sıfır ön yüz bağımlılığı. Arayüzde yalnızca 9 renklik **bej · kiremit · kahve** paleti kullanılır; saydamlık, gradyan ve gölge yoktur. Kurallar `test/palet.test.js` ile otomatik denetlenir.
+Sıfır ön yüz bağımlılığı. Arayüzde yalnızca 9 renklik **İpek Küllü Arduvaz** paleti (açık sis yeşili `#f5f9f5`/`#edf3ee`/`#dbe6dd`, küllü arduvaz `#dce3ea`/`#bcc7d2`/`#3e5164`/`#253341`, kiremit-mercan `#ec7d55`/`#ab421c`) kullanılır; saydamlık, gradyan ve gölge yoktur. Kurallar `test/palet.test.js` ile otomatik denetlenir.
 
 ---
 
@@ -164,7 +164,7 @@ Sıfır ön yüz bağımlılığı. Arayüzde yalnızca 9 renklik **bej · kirem
 
 **Yücel Gümüş** · Full Stack Developer & Yazılım Mühendisi
 
-[![yucelgumus.dev](https://img.shields.io/badge/yucelgumus.dev-ki%C5%9Fisel%20web%20sitesi-b2675e?style=for-the-badge&logo=googlechrome&logoColor=e5d6c5)](https://yucelgumus.dev/)
-[![GitHub](https://img.shields.io/badge/GitHub-yucel--gumus-432c21?style=for-the-badge&logo=github&logoColor=e5d6c5)](https://github.com/yucel-gumus)
+[![yucelgumus.dev](https://img.shields.io/badge/yucelgumus.dev-ki%C5%9Fisel%20web%20sitesi-ec7d55?style=for-the-badge&logo=googlechrome&logoColor=253341)](https://yucelgumus.dev/)
+[![GitHub](https://img.shields.io/badge/GitHub-yucel--gumus-253341?style=for-the-badge&logo=github&logoColor=f5f9f5)](https://github.com/yucel-gumus)
 
 </div>

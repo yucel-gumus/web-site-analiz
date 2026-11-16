@@ -1,9 +1,13 @@
-// Projede yalnızca kullanıcının verdiği 9 renk kullanılabilir.
+// Projede yalnızca İpek Küllü Arduvaz paletinin 9 rengi kullanılabilir.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 
-const IZINLI = new Set(['#e5d6c5', '#c4a381', '#a38260', '#c88d85', '#b2675e', '#8c4b43', '#896756', '#644536', '#432c21']);
+const IZINLI = new Set([
+  '#f5f9f5', '#edf3ee', '#dbe6dd',
+  '#dce3ea', '#bcc7d2', '#3e5164', '#253341',
+  '#ec7d55', '#ab421c',
+]);
 const dizin = new URL('../public/', import.meta.url);
 const dosyalar = readdirSync(dizin).filter((f) => /\.(css|js|html)$/.test(f));
 

@@ -15,11 +15,17 @@ const KAYIT_ANAHTARI = 'havanTopuKaydi';
 const FIZIK_DT = 1 / 120;
 const MAX_SURUKLEME = 140; // bu kadar piksel geri çekmek = %100 güç
 const { W, H } = DUNYA;
-// Projede yalnızca bu palet kullanılır (bkz. styles.css).
+// Projede yalnızca bu 9 renk kullanılır (bkz. styles.css).
 const PAL = {
-  bejAcik: '#e5d6c5', bej: '#c4a381', bejKoyu: '#a38260',
-  kiremitAcik: '#c88d85', kiremit: '#b2675e', kiremitKoyu: '#8c4b43',
-  kahveAcik: '#896756', kahve: '#644536', kahveKoyu: '#432c21',
+  sisAcik: '#f5f9f5',
+  sis: '#edf3ee',
+  sisBant: '#dbe6dd',
+  arduvazAcik: '#dce3ea',
+  arduvazSinir: '#bcc7d2',
+  arduvazOrta: '#3e5164',
+  arduvazKoyu: '#253341',
+  mercan: '#ec7d55',
+  mercanKoyu: '#ab421c',
 };
 
 const waitingEl = document.getElementById('waiting');
@@ -234,7 +240,7 @@ export function startWaiting() {
   function ciz() {
     // Dar ekranda tuval küçüldüğü için yazı ve topuz boyutlarını büyüt (okunur ve parmakla tutulur kalsın).
     const ol = kisitla(W / canvas.getBoundingClientRect().width, 1, 2.4);
-    ctx.fillStyle = PAL.kahveKoyu;
+    ctx.fillStyle = PAL.sis;
     ctx.fillRect(0, 0, W, H);
 
     // arazi
@@ -243,9 +249,9 @@ export function startWaiting() {
     for (let x = 0; x <= W; x += 4) ctx.lineTo(x, arazi(x, oyun.arazi));
     ctx.lineTo(W, H);
     ctx.closePath();
-    ctx.fillStyle = PAL.kahve;
+    ctx.fillStyle = PAL.arduvazAcik;
     ctx.fill();
-    ctx.strokeStyle = PAL.bej;
+    ctx.strokeStyle = PAL.arduvazOrta;
     ctx.lineWidth = 2;
     ctx.stroke();
 
@@ -255,9 +261,9 @@ export function startWaiting() {
       const k = hedefKonumu(h, oyun.t, oyun.arazi);
       ctx.beginPath();
       ctx.arc(k.x, k.y, DUNYA.hedefR, 0, Math.PI * 2);
-      ctx.fillStyle = PAL.kiremitKoyu;
+      ctx.fillStyle = PAL.mercan;
       ctx.fill();
-      ctx.strokeStyle = PAL.kiremitAcik;
+      ctx.strokeStyle = PAL.arduvazKoyu;
       ctx.lineWidth = 1.5;
       ctx.stroke();
       ctx.lineWidth = 1.5;
@@ -271,10 +277,10 @@ export function startWaiting() {
       }
       ctx.beginPath();
       ctx.ellipse(k.x, k.y, 5, 7, 0, 0, Math.PI * 2);
-      ctx.fillStyle = PAL.kiremit;
+      ctx.fillStyle = PAL.mercanKoyu;
       ctx.fill();
       ctx.font = `600 ${11 * ol}px Outfit, system-ui`;
-      ctx.fillStyle = PAL.bejAcik;
+      ctx.fillStyle = PAL.arduvazKoyu;
       ctx.fillText(h.ad, k.x, k.y - DUNYA.hedefR - 5);
     }
 
@@ -284,19 +290,19 @@ export function startWaiting() {
     ctx.save();
     ctx.translate(n.x, n.y);
     ctx.rotate(-a);
-    ctx.fillStyle = PAL.bej;
+    ctx.fillStyle = PAL.arduvazKoyu;
     ctx.fillRect(-4, -6, DUNYA.namluBoyu + 4, 12);
     ctx.restore();
     ctx.beginPath();
     ctx.arc(n.x, n.y + 6, 13, Math.PI, 0);
-    ctx.fillStyle = PAL.bejKoyu;
+    ctx.fillStyle = PAL.arduvazOrta;
     ctx.fill();
 
     // nişan: önizleme yörüngesi (uzaklaştıkça küçülen noktalar) ve lastik
     if (atisHazir()) {
       const b = baslangic(n.x, n.y, oyun.aci, oyun.guc);
       const nokta = yorunge(b, oyun.ruzgar, ruzgarDirenci(oyun.seviyeler.aerodinamik), onizlemeNoktasi(oyun.seviyeler.nisangah), oyun.arazi);
-      ctx.fillStyle = PAL.bejAcik;
+      ctx.fillStyle = PAL.arduvazOrta;
       nokta.forEach((p, i) => {
         ctx.beginPath();
         ctx.arc(p.x, p.y, 2.6 * (1 - i / (nokta.length + 4)), 0, Math.PI * 2);
@@ -313,7 +319,7 @@ export function startWaiting() {
       const nabiz = ilk ? Math.sin(oyun.t * 5) * 3 * ol : 0;
       const kx = kisitla(n.x + ux * d, pr + 4, W - pr - 4);
       const ky = kisitla(n.y + uy * d, pr + 4, H - pr - 4);
-      ctx.strokeStyle = oyun.surukluyor ? PAL.bejAcik : PAL.bej;
+      ctx.strokeStyle = oyun.surukluyor ? PAL.mercanKoyu : PAL.arduvazOrta;
       ctx.lineWidth = (oyun.surukluyor ? 4 : 2.5) * Math.min(ol, 1.6);
       ctx.beginPath();
       ctx.moveTo(n.x, n.y);
@@ -325,7 +331,7 @@ export function startWaiting() {
         const gx = kx + ux * 60 * f;
         const gy = ky + uy * 60 * f;
         ctx.setLineDash([6 * ol, 6 * ol]);
-        ctx.strokeStyle = PAL.bejAcik;
+        ctx.strokeStyle = PAL.arduvazOrta;
         ctx.lineWidth = 2 * Math.min(ol, 1.6);
         ctx.beginPath();
         ctx.moveTo(kx, ky);
@@ -338,31 +344,31 @@ export function startWaiting() {
       }
       ctx.beginPath();
       ctx.arc(kx, ky, pr + nabiz + (oyun.surukluyor ? 3 * ol : 0), 0, Math.PI * 2);
-      ctx.fillStyle = PAL.bej;
+      ctx.fillStyle = PAL.mercan;
       ctx.fill();
-      ctx.strokeStyle = PAL.bejAcik;
+      ctx.strokeStyle = PAL.arduvazKoyu;
       ctx.lineWidth = 3;
       ctx.stroke();
       ctx.beginPath();
       ctx.arc(kx, ky, pr * 0.35, 0, Math.PI * 2);
-      ctx.fillStyle = PAL.kahveKoyu;
+      ctx.fillStyle = PAL.sisAcik;
       ctx.fill();
       if (atisHazir() && (ilk || oyun.surukluyor)) {
         ctx.textAlign = kx < 120 * ol ? 'left' : 'center';
         ctx.font = `700 ${13 * ol}px Outfit, system-ui`;
-        ctx.fillStyle = PAL.bejAcik;
+        ctx.fillStyle = PAL.arduvazKoyu;
         const yazi = oyun.surukluyor ? 'BIRAK = ATEŞ' : 'TUT VE GERİYE ÇEK';
         const tw = ctx.measureText(yazi).width;
         const ph = 22 * ol;
         const px = ctx.textAlign === 'left' ? 4 : kisitla(kx - tw / 2 - 8 * ol, 2, W - tw - 18 * ol);
         const alta = ky + pr + 8 * ol;
         const py = alta + ph <= H - 2 ? alta : ky - pr - 8 * ol - ph;
-        ctx.fillStyle = PAL.kahveKoyu;
+        ctx.fillStyle = PAL.sisAcik;
         ctx.fillRect(px, py, tw + 16 * ol, ph);
-        ctx.strokeStyle = PAL.bej;
+        ctx.strokeStyle = PAL.arduvazKoyu;
         ctx.lineWidth = 1.5;
         ctx.strokeRect(px, py, tw + 16 * ol, ph);
-        ctx.fillStyle = PAL.bejAcik;
+        ctx.fillStyle = PAL.arduvazKoyu;
         ctx.textAlign = 'left';
         ctx.fillText(yazi, px + 8 * ol, py + ph - 7 * ol);
         ctx.textAlign = 'center';
@@ -371,7 +377,7 @@ export function startWaiting() {
     }
 
     // mermi izi (eski noktalar küçülür) ve mermi
-    ctx.fillStyle = PAL.bejKoyu;
+    ctx.fillStyle = PAL.arduvazOrta;
     oyun.iz.forEach((p, i) => {
       ctx.beginPath();
       ctx.arc(p.x, p.y, 2 * (i / oyun.iz.length), 0, Math.PI * 2);
@@ -380,7 +386,7 @@ export function startWaiting() {
     if (oyun.top) {
       ctx.beginPath();
       ctx.arc(oyun.top.x, oyun.top.y, DUNYA.topR, 0, Math.PI * 2);
-      ctx.fillStyle = PAL.bejAcik;
+      ctx.fillStyle = PAL.arduvazKoyu;
       ctx.fill();
     }
 
@@ -391,16 +397,16 @@ export function startWaiting() {
       ctx.beginPath();
       ctx.arc(p.x, p.y, p.r * Math.min(1, f * 1.6), 0, Math.PI * 2);
       if (f < 0.5) {
-        ctx.fillStyle = PAL.kiremitAcik;
+        ctx.fillStyle = PAL.mercan;
         ctx.fill();
       }
-      ctx.strokeStyle = PAL.bejAcik;
+      ctx.strokeStyle = PAL.mercanKoyu;
       ctx.lineWidth = Math.max(0.5, 3 * (1 - f));
       ctx.stroke();
     }
     oyun.yuzen = oyun.yuzen.filter((y) => oyun.t - y.t0 < 1.1);
     ctx.font = `700 ${15 * ol}px Outfit, system-ui`;
-    ctx.fillStyle = PAL.bejAcik;
+    ctx.fillStyle = PAL.mercanKoyu;
     for (const y of oyun.yuzen) {
       const f = (oyun.t - y.t0) / 1.1;
       ctx.fillText(y.metin, y.x, y.y - f * 30);
@@ -410,7 +416,7 @@ export function startWaiting() {
     const yon = oyun.ruzgar === 0 ? '·' : oyun.ruzgar > 0 ? '→' : '←';
     ctx.textAlign = 'center';
     ctx.font = `700 ${14 * ol}px Outfit, system-ui`;
-    ctx.fillStyle = PAL.bej;
+    ctx.fillStyle = PAL.arduvazOrta;
     ctx.fillText(`Rüzgâr ${yon} ${Math.abs(oyun.ruzgar)}`, W / 2, 8 + 14 * ol);
   }
 
