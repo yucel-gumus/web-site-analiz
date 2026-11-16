@@ -5,7 +5,7 @@ import { parseTargetUrl } from './url-guard.js';
 import { runAudit } from './psi.js';
 import { runAnalysis, ANALYSIS_IDS } from './analyses.js';
 import { attachPrompts } from './prompts.js';
-import { getConfig } from './config.js';
+import { getConfig, getCachedCorsOrigins } from './config.js';
 import { analyzeWithAi } from './ai.js';
 import { saveReport, getEntry } from './report-store.js';
 
@@ -59,12 +59,24 @@ export function createApp({ audit = runAudit, analyze = runAnalysis, ai = analyz
   const auditLimited = createLimiter(RATE_LIMIT);
   const aiLimited = createLimiter(AI_RATE_LIMIT);
   app.disable('x-powered-by');
-  const allowed = new Set(corsOrigins());
-  app.use('/api', (req, res, next) => {
+  const staticAllowed = new Set(corsOrigins());
+  app.use('/api', async (req, res, next) => {
     const origin = req.get('origin');
-    if (origin && allowed.has(origin)) {
-      res.set('Access-Control-Allow-Origin', origin);
-      res.vary('Origin');
+    if (origin) {
+      let allow = staticAllowed.has(origin);
+      if (!allow) {
+        const cached = getCachedCorsOrigins();
+        if (cached) {
+          allow = cached.includes(origin);
+        } else {
+          const cfg = await config().catch(() => null);
+          allow = Array.isArray(cfg?.corsOrigins) && cfg.corsOrigins.includes(origin);
+        }
+      }
+      if (allow) {
+        res.set('Access-Control-Allow-Origin', origin);
+        res.vary('Origin');
+      }
     }
     next();
   });
@@ -112,8 +124,8 @@ export function createApp({ audit = runAudit, analyze = runAnalysis, ai = analyz
     try {
       // Aynı rapor için eşzamanlı istekler tek Gemini çağrısını paylaşır.
       entry.aiPending ??= (async () => {
-        const { geminiKey, model, temperature } = await config();
-        return ai(entry.report, { apiKey: geminiKey, model, temperature });
+        const { geminiKey, geminiKeys, model, thinkingLevel, fallbackModels, temperature } = await config();
+        return ai(entry.report, { apiKey: geminiKey, apiKeys: geminiKeys, model, thinkingLevel, fallbackModels, temperature });
       })();
       entry.ai = await entry.aiPending;
       res.json(entry.ai);

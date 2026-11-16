@@ -60,7 +60,23 @@ export function selectIssues(report) {
     .slice(0, MAX_ISSUES);
 }
 
-export function buildAiRequest(report, issues, { temperature } = {}) {
+const TRANSIENT_STATUSES = new Set([429, 500, 502, 503, 504]);
+
+export function normalizeThinkingLevel(model, level) {
+  const m = String(model || '');
+  if (!m.startsWith('gemini-3') && !m.startsWith('gemini-4')) return undefined;
+  if (!level) return undefined;
+  let upper = String(level).trim().toUpperCase();
+  if (!['LOW', 'MEDIUM', 'HIGH', 'XHIGH'].includes(upper)) {
+    upper = 'HIGH';
+  }
+  if (upper === 'XHIGH' && !m.toLowerCase().includes('hydrogen')) {
+    upper = 'HIGH';
+  }
+  return upper;
+}
+
+export function buildAiRequest(report, issues, { temperature, model, thinkingLevel } = {}) {
   const data = {
     url: report.finalUrl,
     cihaz: report.strategy ?? 'mobile',
@@ -93,15 +109,24 @@ export function buildAiRequest(report, issues, { temperature } = {}) {
     `<veri>${json}</veri>`,
   ].join('\n');
 
+  const isGemini4 = String(model || '').startsWith('gemini-4');
+  const normThinking = normalizeThinkingLevel(model, thinkingLevel);
+  const generationConfig = {
+    maxOutputTokens: 16384, // düşünme token'ları da bu sınıra dahildir
+    responseMimeType: 'application/json',
+    responseSchema: SCHEMA,
+  };
+  if (normThinking) {
+    generationConfig.thinkingConfig = { thinkingLevel: normThinking };
+  }
+  if (!isGemini4) {
+    generationConfig.temperature = typeof temperature === 'number' ? temperature : 0.3;
+  }
+
   return {
     systemInstruction: { parts: [{ text: SYSTEM_INSTRUCTION }] },
     contents: [{ role: 'user', parts: [{ text }] }],
-    generationConfig: {
-      temperature: typeof temperature === 'number' ? temperature : 0.3,
-      maxOutputTokens: 16384, // düşünme token'ları da bu sınıra dahildir
-      responseMimeType: 'application/json',
-      responseSchema: SCHEMA,
-    },
+    generationConfig,
   };
 }
 
@@ -145,32 +170,62 @@ export function parseAiResponse(text, issues) {
   };
 }
 
-export async function analyzeWithAi(report, { apiKey, model, temperature, fetchFn = fetch }) {
-  if (!apiKey) throw new Error('Gemini anahtarı yapılandırılmamış.');
+export async function analyzeWithAi(
+  report,
+  { apiKey, apiKeys, model, thinkingLevel, fallbackModels = [], temperature, fetchFn = fetch },
+) {
+  const keys = Array.isArray(apiKeys) && apiKeys.length
+    ? apiKeys.filter(Boolean)
+    : (apiKey ? [apiKey] : []);
+  if (!keys.length) throw new Error('Gemini anahtarı yapılandırılmamış.');
+
   const issues = selectIssues(report);
   if (!issues.length) {
     return { ozet: 'Lighthouse hiçbir sorun bulmadı. Harika iş!', anaPrompt: '', oncelikler: [], sorunlar: [] };
   }
 
-  const res = await fetchFn(
-    `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
-    {
-      method: 'POST',
-      headers: { 'x-goog-api-key': apiKey, 'content-type': 'application/json' },
-      body: JSON.stringify(buildAiRequest(report, issues, { temperature })),
-      signal: AbortSignal.timeout(60_000),
-    },
-  );
-  const body = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(`Gemini hatası (${res.status}): ${body?.error?.message ?? 'bilinmiyor'}`);
-
-  const candidate = body.candidates?.[0];
-  if (candidate?.finishReason && candidate.finishReason !== 'STOP') {
-    // MAX_TOKENS yarım JSON, SAFETY/RECITATION boş ya da kesik yanıt demektir.
-    throw new Error(`Gemini yanıtı tamamlanmadı (finishReason: ${candidate.finishReason}).`);
+  const models = [];
+  for (const m of [model, ...(Array.isArray(fallbackModels) ? fallbackModels : [])]) {
+    if (m && !models.includes(m)) models.push(m);
   }
-  const parts = candidate?.content?.parts ?? [];
-  const text = parts.filter((p) => !p.thought).map((p) => p.text ?? '').join('');
-  if (!text) throw new Error('Gemini boş yanıt döndürdü.');
-  return parseAiResponse(text, issues);
+  if (!models.length) models.push('gemini-4-carbon');
+
+  let lastError = null;
+  for (const m of models) {
+    for (const k of keys) {
+      let res;
+      try {
+        res = await fetchFn(
+          `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(m)}:generateContent`,
+          {
+            method: 'POST',
+            headers: { 'x-goog-api-key': k, 'content-type': 'application/json' },
+            body: JSON.stringify(buildAiRequest(report, issues, { temperature, model: m, thinkingLevel })),
+            signal: AbortSignal.timeout(60_000),
+          },
+        );
+      } catch (err) {
+        lastError = err;
+        continue;
+      }
+
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        lastError = new Error(`Gemini hatası (${res.status}): ${body?.error?.message ?? 'bilinmiyor'}`);
+        if (TRANSIENT_STATUSES.has(res.status)) continue;
+        throw lastError;
+      }
+
+      const candidate = body.candidates?.[0];
+      if (candidate?.finishReason && candidate.finishReason !== 'STOP') {
+        // MAX_TOKENS yarım JSON, SAFETY/RECITATION boş ya da kesik yanıt demektir.
+        throw new Error(`Gemini yanıtı tamamlanmadı (finishReason: ${candidate.finishReason}).`);
+      }
+      const parts = candidate?.content?.parts ?? [];
+      const text = parts.filter((p) => !p.thought).map((p) => p.text ?? '').join('');
+      if (!text) throw new Error('Gemini boş yanıt döndürdü.');
+      return parseAiResponse(text, issues);
+    }
+  }
+  throw lastError || new Error('Gemini isteği başarısız.');
 }
