@@ -66,14 +66,11 @@ export function normalizeThinkingLevel(model, level) {
   const m = String(model || '');
   if (!m.startsWith('gemini-3') && !m.startsWith('gemini-4')) return undefined;
   if (!level) return undefined;
-  let upper = String(level).trim().toUpperCase();
-  if (!['LOW', 'MEDIUM', 'HIGH', 'XHIGH'].includes(upper)) {
-    upper = 'HIGH';
-  }
-  if (upper === 'XHIGH' && !m.toLowerCase().includes('hydrogen')) {
-    upper = 'HIGH';
-  }
-  return upper;
+  const raw = String(level).trim().toUpperCase();
+  if (raw === 'XHIGH' || raw === 'MAX') return 'HIGH';
+  if (raw === 'MINIMAL' || raw === 'OFF' || raw === 'NONE') return 'LOW';
+  if (['LOW', 'MEDIUM', 'HIGH'].includes(raw)) return raw;
+  return 'HIGH';
 }
 
 export function buildAiRequest(report, issues, { temperature, model, thinkingLevel } = {}) {
