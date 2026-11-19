@@ -14,6 +14,32 @@ const RATE_LIMIT = 10; // IP başına dakikadaki denetim sayısı
 const AI_RATE_LIMIT = 6; // IP başına dakikadaki AI analizi sayısı
 
 const WINDOW_MS = 60_000;
+const TELEMETRY_URL = 'https://python-backend-270384591051.europe-west3.run.app/api/telemetry/event';
+
+function notifyServerTelemetry(req, action, detail) {
+  if (process.env.NODE_ENV === 'test') return;
+  const host = String(req.get('host') || '');
+  if (!host || /^(localhost|127\.0\.0\.1)(:|$)/i.test(host)) return;
+  const clientIp = req.ip || req.socket?.remoteAddress || 'unknown';
+  void fetch(TELEMETRY_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Origin: 'https://site-analiz.web.app',
+      'User-Agent': 'YucelTelemetryServer/site-analiz',
+    },
+    body: JSON.stringify({
+      project: 'site-analiz',
+      event: 'action',
+      action,
+      ...(detail ? { detail: String(detail).slice(0, 80) } : {}),
+      path: req.path,
+      source: 'server',
+      client_ip: clientIp,
+    }),
+    signal: AbortSignal.timeout(3000),
+  }).catch(() => {});
+}
 
 export function createLimiter(limit, now = Date.now) {
   const hits = new Map();
@@ -99,6 +125,11 @@ export function createApp({ audit = runAudit, analyze = runAnalysis, ai = analyz
     if (mode === 'custom' && !ANALYSIS_IDS.has(analysis)) {
       return res.status(400).json({ error: 'Özel mod için geçerli bir analiz türü seç.' });
     }
+    notifyServerTelemetry(
+      req,
+      'audit',
+      `${target.hostname} (${mode === 'custom' ? analysis : 'full'})`,
+    );
     try {
       const { pagespeedKey } = await config();
       const result = await analyze(target.href, { strategy, apiKey: pagespeedKey, mode, analysis, audit });
@@ -120,6 +151,13 @@ export function createApp({ audit = runAudit, analyze = runAnalysis, ai = analyz
     if (!entry) {
       return res.status(404).json({ error: 'Rapor bulunamadı veya süresi doldu. Analizi yeniden çalıştır.' });
     }
+    let aiHost = '';
+    try {
+      if (entry.report?.url) aiHost = new URL(entry.report.url).hostname;
+    } catch {
+      aiHost = '';
+    }
+    notifyServerTelemetry(req, 'ai_review', aiHost);
     if (entry.ai) return res.json(entry.ai);
     try {
       // Aynı rapor için eşzamanlı istekler tek Gemini çağrısını paylaşır.

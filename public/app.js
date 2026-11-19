@@ -1,6 +1,33 @@
 import { el } from './dom.js';
 import { startWaiting, stopWaiting, showGameResult } from './bekleme.js';
 
+(function trackSiteAnalizVisit() {
+  if (typeof window === 'undefined') return;
+  if (window.location.protocol !== 'https:') return;
+  if (['localhost', '127.0.0.1'].includes(window.location.hostname)) return;
+  if (navigator.webdriver) return;
+  try {
+    if (window.sessionStorage.getItem('yg_telemetry_visit_v1')) return;
+    window.sessionStorage.setItem('yg_telemetry_visit_v1', '1');
+  } catch {
+    // ignore storage errors
+  }
+  const url = 'https://python-backend-270384591051.europe-west3.run.app/api/telemetry/event';
+  const body = JSON.stringify({
+    project: 'site-analiz',
+    event: 'visit',
+    path: window.location.pathname,
+    referrer: document.referrer || '',
+    source: 'client',
+  });
+  try {
+    if (typeof navigator.sendBeacon === 'function' && navigator.sendBeacon(url, body)) return;
+    void fetch(url, { method: 'POST', body, keepalive: true }).catch(() => {});
+  } catch {
+    // ignore telemetry errors
+  }
+})();
+
 const form = document.getElementById('audit-form');
 const input = document.getElementById('url-input');
 const btn = document.getElementById('submit-btn');
